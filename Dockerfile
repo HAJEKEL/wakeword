@@ -9,22 +9,35 @@ FROM python:3.9
 # Install ping, iproute2, and vim
 # Always run apt-get update because docker will otherwise use a cached version of the package list                                               
 RUN apt-get update && apt-get install -y \ 
+    # iputils-ping for ping command
     iputils-ping \
+    # iproute2 for ip command
     iproute2 \
+    # vim for editing files
     vim \
+    # curl for downloading files
     curl \
-    tmux \
+    # portaudio19-dev for pyaudio
     portaudio19-dev \
+    # espeak for text-to-speech
     espeak \
+    # alsa-utils, ffmpeg and libsound2 for testing audio
     alsa-utils \
-    gcc \
+    pulseaudio \
+    ffmpeg \
+    #libasound2-plugins \
+    jackd2 \
+    libportaudio2 \
+    libportaudiocpp0 \
+    libsndfile1-dev \
+    portaudio19-dev \
+    python3 \
+    python3-dev \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the .tmux.conf file to the home directory of the container
-COPY .tmux.conf /root/.tmux.conf
-
-# Create a non-root user
-ARG USERNAME=henk_docker
+# Create a non-root user to match the host user and group id 
+ARG USERNAME=henk
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
@@ -40,16 +53,9 @@ RUN apt-get update \
   && chmod 0440 /etc/sudoers.d/$USERNAME \
   && rm -rf /var/lib/apt/lists/*
 
-# Append the specified lines to the end of the .bashrc file
-RUN echo '_tmux_sessions() {' >> /root/.bashrc && \
-    echo '    local cur=${COMP_WORDS[COMP_CWORD]}' >> /root/.bashrc && \
-    echo '    local sessions=$(tmux list-sessions -F "#S")' >> /root/.bashrc && \
-    echo '    COMPREPLY=( $(compgen -W "${sessions}" -- ${cur}) )' >> /root/.bashrc && \
-    echo '}' >> /root/.bashrc && \
-    echo '' >> /root/.bashrc && \
-    echo 'complete -F _tmux_sessions tmux attach-session -t' >> /root/.bashrc && \
-    echo 'complete -F _tmux_sessions tmux switch-client -t' >> /root/.bashrc && \
-    echo 'complete -F _tmux_sessions tmux kill-session -t' >> /root/.bashrc
+# Create the PulseAudio configuration directory for the user
+RUN mkdir -p /home/$USERNAME/.config/pulse \
+    && chown -R $USERNAME:$USERNAME /home/$USERNAME/.config/pulse
 
 # Set the working directory in the container
 WORKDIR /app

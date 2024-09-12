@@ -1,0 +1,7 @@
+openai                     # OpenAI API for language models
+python-decouple
+
+pvporcupine==1.9.5
+pyaudio
+pyttsx3
+SpeechRecognition         # Local speech recognition library
